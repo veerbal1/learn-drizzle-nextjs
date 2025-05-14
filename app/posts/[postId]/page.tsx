@@ -12,7 +12,9 @@ interface PostPageProps {
 }
 
 export default async function PostPage({ params }: PostPageProps) {
-  const postId = parseInt(params.postId);
+  // Ensure params is properly awaited by using Promise.resolve
+  const resolvedParams = await Promise.resolve(params);
+  const postId = parseInt(resolvedParams.postId);
   
   if (isNaN(postId)) {
     return notFound();

@@ -12,7 +12,9 @@ interface UserPostsPageProps {
 }
 
 export default async function UserPostsPage({ params }: UserPostsPageProps) {
-  const userId = parseInt(params.userId);
+  // Ensure params is properly awaited by using Promise.resolve
+  const resolvedParams = await Promise.resolve(params);
+  const userId = parseInt(resolvedParams.userId);
   
   if (isNaN(userId)) {
     return notFound();
