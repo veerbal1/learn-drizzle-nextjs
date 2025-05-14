@@ -10,7 +10,7 @@ export default function Home() {
           A simple application demonstrating Drizzle ORM with NextJS and Server Actions.
         </p>
         
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4 justify-center">
           <Link 
             href="/users/new" 
             className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
@@ -23,6 +23,20 @@ export default function Home() {
             className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors"
           >
             View All Users
+          </Link>
+          
+          <Link 
+            href="/posts/new" 
+            className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-md transition-colors"
+          >
+            Create a New Post
+          </Link>
+          
+          <Link 
+            href="/posts" 
+            className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md transition-colors"
+          >
+            View All Posts
           </Link>
         </div>
       </div>
