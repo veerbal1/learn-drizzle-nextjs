@@ -13,6 +13,7 @@ interface Comment {
 
 interface CommentListProps {
   comments: Comment[];
+  refreshKey?: number;
 }
 
 export function CommentList({ comments }: CommentListProps) {
