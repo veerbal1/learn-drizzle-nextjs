@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -16,7 +16,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { createUser, type UserFormState } from "@/app/actions/user";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { startTransition } from "react";
+import { useRouter } from "next/navigation";
 
 // Define the form validation schema
 const formSchema = z.object({
@@ -31,18 +33,19 @@ const formSchema = z.object({
 // Define the form's type from the schema
 type FormValues = z.infer<typeof formSchema>;
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  
+// SubmitButton with loading state
+function SubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
   return (
-    <Button type="submit" className="w-full" disabled={pending}>
-      {pending ? "Creating..." : "Create User"}
+    <Button type="submit" className="w-full" disabled={isSubmitting}>
+      {isSubmitting ? "Creating..." : "Create User"}
     </Button>
   );
 }
 
 export function UserForm() {
-  const [state, formAction] = useFormState<UserFormState, FormData>(createUser, {});
+  const [state, formAction] = useActionState<UserFormState, FormData>(createUser, {});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
   
   // Initialize the form
   const form = useForm<FormValues>({
@@ -53,19 +56,38 @@ export function UserForm() {
     },
   });
   
-  // Reset form on successful submission
+  // Reset form on successful submission and redirect
   useEffect(() => {
     if (state.success) {
       form.reset();
+      setIsSubmitting(false);
+      
+      // Short timeout to show success message before redirecting
+      const redirectTimer = setTimeout(() => {
+        router.push('/users');
+      }, 100);
+      
+      return () => clearTimeout(redirectTimer);
     }
-  }, [state.success, form]);
+    
+    if (state.error) {
+      setIsSubmitting(false);
+    }
+  }, [state.success, state.error, form, router]);
 
-  // Create a client action that passes React Hook Form values to the server action
-  const clientAction = async (data: FormValues) => {
+  // Handle form submission with react-hook-form
+  const onSubmit = async (data: FormValues) => {
+    setIsSubmitting(true);
+    
+    // Create FormData for the server action
     const formData = new FormData();
     formData.append("name", data.name);
     formData.append("email", data.email);
-    formAction(formData);
+    
+    // Call the form action inside a startTransition
+    startTransition(() => {
+      formAction(formData);
+    });
   };
 
   return (
@@ -74,7 +96,7 @@ export function UserForm() {
       
       {state.success && (
         <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md">
-          {state.success}
+          {state.success} Redirecting to users page...
         </div>
       )}
       
@@ -85,7 +107,10 @@ export function UserForm() {
       )}
       
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(clientAction)} className="space-y-6">
+        <form 
+          onSubmit={form.handleSubmit(onSubmit)} 
+          className="space-y-6"
+        >
           <FormField
             control={form.control}
             name="name"
@@ -120,7 +145,7 @@ export function UserForm() {
             )}
           />
           
-          <SubmitButton />
+          <SubmitButton isSubmitting={isSubmitting} />
         </form>
       </Form>
     </div>
