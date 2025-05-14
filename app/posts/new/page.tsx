@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/schema";
 import Link from "next/link";
 
+export const revalidate = 0;
+
 export default async function NewPostPage() {
   // Fetch all users for the author dropdown
   const allUsers = await db.select().from(users).orderBy(users.name);
